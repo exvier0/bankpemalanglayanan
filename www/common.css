@@ -1,0 +1,55 @@
+/* Common styles shared across pages */
+:root {
+    --btn-bg: rgba(255,255,255,0.18);
+    --btn-border: rgba(255,255,255,0.28);
+    --btn-radius: 50px;
+    --btn-color: #fff;
+}
+
+/* Top tools (translate / dark mode) */
+.top-tools {
+    position: absolute; top: 20px; right: 20px;
+    display: flex; gap: 10px; z-index: 1000;
+}
+.tool-btn {
+    background: var(--btn-bg); border: 1px solid var(--btn-border);
+    color: var(--btn-color); padding: 8px 15px; border-radius: 20px; cursor: pointer;
+    backdrop-filter: blur(5px); transition: 0.3s; font-size: 14px;
+}
+.tool-btn:hover { background: rgba(255,255,255,0.36); transform: translateY(-2px); }
+
+/* Consistent Back button */
+.btn-kembali-wrapper { position: absolute; top: 20px; left: 20px; z-index: 100; }
+.btn-kembali {
+    text-decoration: none; color: var(--btn-color); font-size: 0.9rem; font-weight: 500;
+    background: var(--btn-bg); padding: 8px 15px; border-radius: var(--btn-radius);
+    border: 1px solid var(--btn-border); backdrop-filter: blur(5px); transition: 0.3s;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-kembali:hover { background: rgba(255,255,255,0.36); transform: translateX(-3px); color: var(--btn-color); }
+
+/* Small variant usable in footers */
+.btn-kembali.small {
+    background: transparent; border: none; padding: 0; font-size: 0.9rem; gap: 6px;
+}
+
+/* Make sure links inside .btn-kembali inherit styles */
+.btn-kembali i { opacity: 0.95; }
+
+/* AI badge (floating) */
+.ai-badge {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(30,60,114,0.95), rgba(42,82,152,0.95));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    cursor: pointer; z-index: 1200; border: 2px solid rgba(255,255,255,0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.ai-badge img { width: 44px; height: 44px; display: block; }
+.ai-badge:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0,0,0,0.32); }
+

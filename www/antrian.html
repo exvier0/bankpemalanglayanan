@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambil Antrian - Bank Pemalang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* === STYLE UTAMA (TAMPILAN MONITOR) === */
+        :root {
+            --bg-glass: rgba(255, 255, 255, 0.15);
+            --border-glass: rgba(255, 255, 255, 0.3);
+            --text-color: #ffffff;
+            --teller-color: #4ade80; 
+            --cs-color: #60a5fa; 
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.95), rgba(42, 82, 152, 0.95)), url('cover.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .container-antrian { width: 100%; max-width: 900px; margin-top: 50px; }
+
+        .btn-back-fixed {
+            position: fixed; top: 20px; left: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 45px; height: 45px; border-radius: 50%;
+            background: rgba(255,255,255,0.2); color: white;
+            text-decoration: none; border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.2rem; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .header-glass {
+            background: var(--bg-glass); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 15px 25px;
+            display: flex; align-items: center; justify-content: flex-end; 
+            border: 1px solid var(--border-glass); margin-bottom: 30px;
+            text-align: right;
+        }
+
+        .queue-card {
+            background: var(--bg-glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass); border-radius: 25px;
+            padding: 30px; text-align: center; height: 100%;
+            transition: 0.3s;
+        }
+        .queue-card:hover { transform: translateY(-5px); }
+
+        .queue-title { font-weight: 800; font-size: 1.5rem; letter-spacing: 2px; margin-bottom: 5px; }
+        
+        .display-number { 
+            font-size: 4.5rem; font-weight: 800; margin: 10px 0; 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+            background: rgba(0,0,0,0.2); border-radius: 15px; padding: 10px;
+        }
+        
+        .text-teller { color: var(--teller-color); border: 1px solid var(--teller-color); }
+        .text-cs { color: var(--cs-color); border: 1px solid var(--cs-color); }
+
+        .btn-ambil {
+            width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; border: none;
+            margin-top: 15px; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
+        }
+        .btn-ambil-teller { background: var(--teller-color); color: #064e3b; }
+        .btn-ambil-cs { background: var(--cs-color); color: #1e3a8a; }
+
+        /* MODAL TIKET (POPUP DI LAYAR) */
+        .ticket-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 999;
+        }
+        
+        .ticket-paper {
+            background: #fff; color: #333; width: 300px; 
+            padding: 20px; border-radius: 10px; text-align: center;
+        }
+
+        /* === SETTINGAN KHUSUS PRINTER THERMAL 58MM === */
+        @media print {
+            /* Sembunyikan semua tampilan website */
+            body * { visibility: hidden; }
+            
+            /* Tampilkan tiket doang */
+            #ticketModal, #ticketModal * {
+                visibility: visible;
+            }
+
+            /* Atur posisi dan ukuran kertas */
+            #ticketModal {
+                position: absolute;
+                left: 0; top: 0;
+                width: 58mm; /* Ukuran Kertas 58mm */
+                margin: 0; padding: 0;
+                background: white !important;
+            }
+
+            /* Layout Struk */
+            .ticket-paper {
+                width: 100%;
+                border: none;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+            }
+
+            /* Font Hitam Tebal Jelas */
+            .nomor-anda {
+                font-size: 3rem !important; /* Angka Gede */
+                font-weight: 900 !important;
+                color: black !important;
+                margin: 5px 0;
+            }
+            
+            h6, p, small, span {
+                color: black !important;
+                font-family: monospace; /* Font struk kasir */
+            }
+
+            /* Hilangkan tombol tutup pas ngeprint */
+            .ticket-footer, .btn-back-fixed { display: none !important; }
+        }
+    </style>
+</head>
+<script>
+  const { ipcRenderer } = require('electron');
+
+  // Panggil fungsi ini pas tombol "Ambil Tiket" diklik
+  function cetakTiketOtomatis() {
+    const printerName = localStorage.getItem('printerName') || '';
+    ipcRenderer.send('print-struk', printerName);
+  }
+</script>
+<body>
+
+    <a href="index.html" class="btn-back-fixed"><i class="fas fa-arrow-left"></i></a>
+
+    <div class="container-antrian">
+        <div class="header-glass">
+            <div>
+                <h4 class="m-0 fw-bold text-end">Mesin Antrian</h4>
+                <div class="small opacity-75 text-end">Silakan ambil tiket</div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="queue-card">
+                    <div class="queue-title" style="color: var(--teller-color)">TELLER</div>
+                    <div class="display-number text-teller" id="display-teller">A-000</div>
+                    <button class="btn-ambil btn-ambil-teller" onclick="ambilTiket('A')">
+                        <i class="fas fa-print"></i> AMBIL TIKET TELLER
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="queue-card">
+                    <div class="queue-title" style="color: var(--cs-color)">CS</div>
+                    <div class="display-number text-cs" id="display-cs">B-000</div>
+                    <button class="btn-ambil btn-ambil-cs" onclick="ambilTiket('B')">
+                        <i class="fas fa-print"></i> AMBIL TIKET CS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ticket-modal" id="ticketModal">
+        <div class="ticket-paper">
+            <h6 style="font-weight:bold; margin:0;">BANK PEMALANG</h6>
+            <small id="tgl-tiket" style="display:block; margin-bottom:5px;">...</small>
+            <hr style="border-top: 1px dashed black; margin: 5px 0;">
+            
+            <span style="font-weight:bold;">NOMOR ANTRIAN</span>
+            <div class="nomor-anda" id="modal-number">A-000</div>
+            
+            <small>Silakan Menunggu</small>
+            <br><br>
+            
+            <div class="ticket-footer btn btn-danger btn-sm w-100" onclick="document.getElementById('ticketModal').style.display='none'">
+                Tutup
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi Data
+        if(!localStorage.getItem('antrian_A_total')) localStorage.setItem('antrian_A_total', 0);
+        if(!localStorage.getItem('antrian_B_total')) localStorage.setItem('antrian_B_total', 0);
+        if(!localStorage.getItem('antrian_A_current')) localStorage.setItem('antrian_A_current', 0);
+        if(!localStorage.getItem('antrian_B_current')) localStorage.setItem('antrian_B_current', 0);
+
+        // Update Layar Realtime
+        function updateDisplay() {
+            let currA = localStorage.getItem('antrian_A_current');
+            let currB = localStorage.getItem('antrian_B_current');
+            document.getElementById('display-teller').innerText = 'A-' + currA.toString().padStart(3, '0');
+            document.getElementById('display-cs').innerText = 'B-' + currB.toString().padStart(3, '0');
+        }
+        setInterval(updateDisplay, 1000);
+        updateDisplay();
+
+        // FUNGSI PRINT OTOMATIS
+        function ambilTiket(kode) {
+            let keyTotal = (kode === 'A') ? 'antrian_A_total' : 'antrian_B_total';
+            let newTotal = parseInt(localStorage.getItem(keyTotal)) + 1;
+            localStorage.setItem(keyTotal, newTotal);
+
+            // Isi Data Tiket
+            let strNewTotal = kode + '-' + newTotal.toString().padStart(3, '0');
+            document.getElementById('modal-number').innerText = strNewTotal;
+            
+            let now = new Date();
+            document.getElementById('tgl-tiket').innerText = now.toLocaleString('id-ID');
+
+            // Munculin Tiket
+            document.getElementById('ticketModal').style.display = 'flex';
+
+            // Jeda 0.3 detik langsung Print
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+    </script>
+</body>
+</html>

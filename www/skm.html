@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survei SKM - Bank Pemalang</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* === TEMA & VARIABEL === */
+        :root {
+            --bg-overlay: rgba(30, 60, 114, 0.85);
+            --bg-overlay-2: rgba(42, 82, 152, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --text-sub: #6c757d;
+            --input-bg: #fff;
+            --input-border: #e9ecef;
+            --opt-bg: #f8f9fa;
+            --opt-hover: #e9ecef;
+            --opt-active: #dbeafe;
+            --opt-border-active: #3b82f6;
+        }
+
+        .dark-theme {
+            --bg-overlay: rgba(15, 23, 42, 0.95);
+            --bg-overlay-2: rgba(30, 41, 59, 0.95);
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --text-color: #f8fafc;
+            --text-sub: #94a3b8;
+            --input-bg: #1e293b;
+            --input-border: #475569;
+            --opt-bg: #1e293b;
+            --opt-hover: #334155;
+            --opt-active: #1e40af;
+            --opt-border-active: #60a5fa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh; margin: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, var(--bg-overlay), var(--bg-overlay-2)), url('cover.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            padding: 20px; transition: background 0.5s ease;
+        }
+
+        /* TOMBOL KEMBALI FIXED */
+        .btn-back-fixed {
+            position: fixed; top: 20px; left: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 45px; height: 45px; border-radius: 50%;
+            background: rgba(255,255,255,0.2); color: white;
+            text-decoration: none; border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.2rem; z-index: 1000; backdrop-filter: blur(5px); transition: 0.3s;
+        }
+        .btn-back-fixed:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); color: white; }
+
+        .survey-card {
+            background: var(--card-bg); color: var(--text-color);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            width: 100%; max-width: 750px; border-radius: 25px; 
+            padding: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative; min-height: 550px; 
+            display: flex; flex-direction: column;
+        }
+
+        .top-tools { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 10px 15px; border-radius: 20px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: 0.3s; font-size: 0.9rem; font-weight: 600;
+        }
+        .tool-btn:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
+
+        .progress-container { margin-top: 20px; margin-bottom: 30px; }
+        .progress { height: 10px; border-radius: 10px; background-color: var(--input-border); overflow: hidden; }
+        .progress-bar { background: linear-gradient(90deg, #4ade80, #059669); border-radius: 10px; transition: width 0.5s; }
+        .step-text { text-align: right; font-size: 13px; color: var(--text-sub); margin-top: 8px; font-weight: 600; }
+
+        .form-control, .form-select {
+            background-color: var(--input-bg); border-color: var(--input-border);
+            color: var(--text-color); border-radius: 12px; padding: 14px; font-size: 0.95rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg); color: var(--text-color);
+            border-color: #3b82f6; box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+
+        .question-box { display: none; flex-grow: 1; }
+        .question-box.active { display: flex; flex-direction: column; justify-content: center; animation: fadeIn 0.4s; }
+        
+        .q-number { color: #3b82f6; font-weight: 700; letter-spacing: 1px; font-size: 13px; margin-bottom: 10px; display: inline-block; background: rgba(59, 130, 246, 0.1); padding: 5px 15px; border-radius: 20px; }
+        .q-title { font-size: 1.5rem; font-weight: 700; color: var(--text-color); margin-bottom: 30px; line-height: 1.5; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .option-btn {
+            background: var(--opt-bg); border: 2px solid var(--input-border);
+            border-radius: 15px; padding: 25px 15px; text-align: center; cursor: pointer;
+            transition: all 0.2s; color: var(--text-color);
+        }
+        .option-btn:hover { border-color: #cbd5e1; transform: translateY(-3px); background: var(--opt-hover); }
+        .option-btn.selected { 
+            border-color: var(--opt-border-active); background: var(--opt-active); 
+            color: var(--opt-border-active); font-weight: bold;
+        }
+        .opt-emoji { font-size: 38px; display: block; margin-bottom: 8px; transition: 0.3s; }
+        .option-btn.selected .opt-emoji { transform: scale(1.2); }
+        .opt-label { font-size: 14px; }
+
+        .actions { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 30px; border-top: 1px solid var(--input-border); }
+        .btn-nav { padding: 12px 30px; border-radius: 50px; font-weight: 600; border: none; transition: 0.3s; font-size: 1rem; }
+        .btn-prev { background: transparent; color: var(--text-sub); border: 1px solid var(--input-border); }
+        .btn-prev:hover { color: var(--text-color); background: var(--opt-hover); }
+        .btn-next { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4); color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .survey-card { padding: 25px; min-height: 90vh; border-radius: 20px; margin-top: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="btn-back-fixed"><i class="fas fa-arrow-left"></i></a>
+
+    <div class="top-tools">
+        <button class="tool-btn" onclick="toggleDarkMode()">
+            <i class="fas fa-moon" id="icon-mode"></i>
+        </button>
+        <button class="tool-btn" onclick="toggleLang()">
+            <img src="https://flagcdn.com/w20/id.png" id="img-flag" width="20"> <span id="txt-lang" class="ms-1">ID</span>
+        </button>
+    </div>
+
+    <form action="/submit" method="POST" id="skmForm" class="survey-card">
+        <input type="hidden" name="jenis" value="SKM">
+        
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar" id="p-bar" style="width: 0%"></div>
+            </div>
+            <div class="step-text"><span id="txt-step">Langkah</span> <span id="step-now">1</span> / <span id="step-total">0</span></div>
+        </div>
+
+        <div class="question-box active" id="step-0">
+            <span class="q-number" id="t-head-data"><i class="fas fa-user me-2"></i>DATA RESPONDEN</span>
+            <h2 class="q-title" id="t-title-data">Mohon lengkapi data diri Anda.</h2>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="small text-muted mb-1 fw-bold" id="l-nama">Nama Lengkap</label>
+                    <input type="text" name="Nama" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="small text-muted mb-1 fw-bold" id="l-jk">Jenis Kelamin</label>
+                    <select name="JK" class="form-select" required>
+                        <option value="" hidden>- Pilih -</option>
+                        <option value="L">Laki-laki (Male)</option>
+                        <option value="P">Perempuan (Female)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="small text-muted mb-1 fw-bold" id="l-usia">Usia (Tahun)</label>
+                    <input type="number" name="Usia" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="small text-muted mb-1 fw-bold" id="l-didik">Pendidikan Terakhir</label>
+                    <select name="Pendidikan" class="form-select" required>
+                        <option value="" hidden>- Pilih -</option>
+                        <option value="SD">SD / Elementary</option>
+                        <option value="SMP">SMP / Junior High</option>
+                        <option value="SMA">SMA / SMK</option>
+                        <option value="D3">D3 / Diploma</option>
+                        <option value="S1">S1 / Bachelor</option>
+                        <option value="S2">S2 / Master</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="small text-muted mb-1 fw-bold" id="l-kerja">Pekerjaan</label>
+                    <select name="Pekerjaan" class="form-select" required>
+                        <option value="" hidden>- Pilih -</option>
+                        <option value="PNS">PNS / TNI / POLRI</option>
+                        <option value="Pegawai Swasta">Pegawai Swasta</option>
+                        <option value="Wiraswasta">Wiraswasta</option>
+                        <option value="Pelajar">Pelajar / Mahasiswa</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="questions-wrapper"></div>
+
+        <div class="actions">
+            <button type="button" class="btn-nav btn-prev" id="btn-prev" style="display:none;" onclick="move(-1)">
+                <i class="fas fa-arrow-left me-2"></i> <span id="txt-prev">Kembali</span>
+            </button>
+            <div style="flex-grow: 1;"></div>
+            <button type="button" class="btn-nav btn-next" id="btn-next" onclick="move(1)">
+                <span id="txt-next">Lanjut</span> <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+            <button type="submit" class="btn-nav btn-next bg-success border-0" id="btn-submit" style="display:none; background: linear-gradient(135deg, #10b981, #059669);">
+                <span id="txt-finish">Kirim Survei</span> <i class="fas fa-paper-plane ms-2"></i>
+            </button>
+        </div>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // === DATA BAHASA ANTI-UNDEFINED ===
+        const langData = {
+            'ID': {
+                step: 'Langkah', headData: 'DATA RESPONDEN', titleData: 'Mohon lengkapi data diri Anda.',
+                lNama: 'Nama Lengkap (Sesuai KTP)', lJk: 'Jenis Kelamin', lUsia: 'Usia (Tahun)',
+                lDidik: 'Pendidikan Terakhir', lKerja: 'Pekerjaan',
+                btnPrev: 'Kembali', btnNext: 'Lanjut', btnFinish: 'Kirim Survei',
+                alertData: 'Lengkapi seluruh data Anda!', alertQ: 'Mohon pilih salah satu jawaban.',
+                qHead: 'PERTANYAAN', opts: ['Tidak Sesuai', 'Kurang Sesuai', 'Sesuai', 'Sangat Sesuai']
+            },
+            'EN': {
+                step: 'Step', headData: 'RESPONDENT DATA', titleData: 'Please complete your personal data.',
+                lNama: 'Full Name', lJk: 'Gender', lUsia: 'Age (Years)',
+                lDidik: 'Education', lKerja: 'Occupation',
+                btnPrev: 'Back', btnNext: 'Next', btnFinish: 'Submit Survey',
+                alertData: 'Please complete all fields!', alertQ: 'Please select an answer.',
+                qHead: 'QUESTION', opts: ['Not Suitable', 'Less Suitable', 'Suitable', 'Very Suitable']
+            }
+        };
+
+        const questionsData = [
+            { id: "Bagaimana kesesuaian persyaratan pelayanan dengan jenis pelayanannya?", en: "How is the suitability of service requirements with the type of service?" },
+            { id: "Bagaimana kemudahan prosedur pelayanan di kantor kami?", en: "How easy are the service procedures in our office?" },
+            { id: "Bagaimana kecepatan waktu dalam memberikan pelayanan?", en: "How is the speed of time in providing service?" },
+            { id: "Bagaimana kewajaran biaya/tarif dalam pelayanan?", en: "How is the fairness of service fees?" },
+            { id: "Bagaimana kesesuaian produk pelayanan dengan standar pelayanan?", en: "How is the suitability of service products with service standards?" },
+            { id: "Bagaimana kompetensi/kemampuan petugas dalam pelayanan?", en: "How is the competence/ability of officers in service?" },
+            { id: "Bagaimana perilaku petugas terkait kesopanan dan keramahan?", en: "How is the officer's behavior regarding politeness and friendliness?" },
+            { id: "Bagaimana kualitas sarana dan prasarana (AC, Kursi, Toilet)?", en: "How is the quality of facilities (AC, Seats, Toilet)?" },
+            { id: "Bagaimana penanganan pengaduan saran dan masukan?", en: "How is the handling of complaints, suggestions, and feedback?" }
+        ];
+
+        let currentLang = 'ID';
+        let currentStep = 0;
+        const totalSteps = questionsData.length + 1;
+
+        // === HELPER: RESET DATA SKM SETIAP 6 BULAN (SEMESTER) ===
+        function checkAndReset6MonthData() {
+            const lastReset = localStorage.getItem('skm_last_reset');
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            // Tentukan periode semester: 1-6 = semester 1, 7-12 = semester 2
+            const semester = month <= 6 ? 1 : 2;
+            const currentPeriod = year + '-S' + semester; // contoh: 2026-S1
+            
+            if (lastReset !== currentPeriod) {
+                // Semester baru, reset data SKM
+                const oldData = JSON.parse(localStorage.getItem('db_skm') || '[]');
+                // Backup data lama jika ada
+                if (oldData.length > 0) {
+                    const backup = localStorage.getItem('skm_backup') || '[]';
+                    const allBackups = JSON.parse(backup);
+                    allBackups.push({ period: lastReset, data: oldData });
+                    localStorage.setItem('skm_backup', JSON.stringify(allBackups));
+                }
+                // Reset data SKM
+                localStorage.removeItem('db_skm');
+                localStorage.setItem('skm_last_reset', currentPeriod);
+                console.log('Data SKM direset untuk semester baru:', currentPeriod);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            // Bersihkan data lama jika ada
+            if(localStorage.getItem('theme') === 'dark') setDarkMode(true);
+            
+            // Cek Bahasa
+            const savedLang = localStorage.getItem('lang');
+            if(savedLang === 'EN' || savedLang === 'ID') {
+                currentLang = savedLang;
+            } else {
+                currentLang = 'ID'; // Paksa ke ID kalau datanya undefined/rusak
+            }
+            
+            generateQuestionsHTML();
+            updateUI();
+            updateProgress();
+        });
+
+        function generateQuestionsHTML() {
+            const container = document.getElementById('questions-wrapper');
+            container.innerHTML = '';
+            
+            questionsData.forEach((q, index) => {
+                const qNum = index + 1;
+                const html = `
+                <div class="question-box" id="step-${qNum}">
+                    <span class="q-number"><i class="fas fa-question-circle me-1"></i> <span class="txt-qhead">PERTANYAAN</span> ${qNum} / ${questionsData.length}</span>
+                    <h3 class="q-title" data-id="${q.id}" data-en="${q.en}">${q.id}</h3>
+                    
+                    <div class="options-grid">
+                        <div class="option-btn" onclick="selectOpt(${qNum}, 1, this)">
+                            <span class="opt-emoji">😡</span><span class="opt-label opt-1">Tidak Sesuai</span>
+                        </div>
+                        <div class="option-btn" onclick="selectOpt(${qNum}, 2, this)">
+                            <span class="opt-emoji">😟</span><span class="opt-label opt-2">Kurang Sesuai</span>
+                        </div>
+                        <div class="option-btn" onclick="selectOpt(${qNum}, 3, this)">
+                            <span class="opt-emoji">🙂</span><span class="opt-label opt-3">Sesuai</span>
+                        </div>
+                        <div class="option-btn" onclick="selectOpt(${qNum}, 4, this)">
+                            <span class="opt-emoji">😍</span><span class="opt-label opt-4">Sangat Sesuai</span>
+                        </div>
+                    </div>
+                    <input type="hidden" name="Q${qNum}" id="val-Q${qNum}" required>
+                </div>
+                `;
+                container.innerHTML += html;
+            });
+            document.getElementById('step-total').innerText = totalSteps;
+        }
+
+        function toggleDarkMode() {
+            setDarkMode(!document.body.classList.contains('dark-theme'));
+        }
+
+        function setDarkMode(enable) {
+            const icon = document.getElementById('icon-mode');
+            if (enable) {
+                document.body.classList.add('dark-theme');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function toggleLang() {
+            currentLang = (currentLang === 'ID') ? 'EN' : 'ID';
+            localStorage.setItem('lang', currentLang);
+            updateUI();
+        }
+
+        // FUNGSI UPDATE UI ANTI ERROR (DEFENSIVE)
+        function updateUI() {
+            // Paksa fallback kalau data d tiba-tiba undefined
+            let d = langData[currentLang];
+            if (!d) {
+                currentLang = 'ID';
+                d = langData['ID'];
+            }
+
+            // Fungsi helper biar tidak undefined error
+            const setTxt = (id, text) => { 
+                const el = document.getElementById(id); 
+                if(el && text) el.innerText = text; 
+            };
+
+            document.getElementById('img-flag').src = (currentLang === 'ID') ? "https://flagcdn.com/w20/id.png" : "https://flagcdn.com/w20/us.png";
+            
+            setTxt('txt-lang', currentLang);
+            setTxt('txt-step', d.step);
+            
+            const headEl = document.getElementById('t-head-data');
+            if(headEl) headEl.innerHTML = `<i class="fas fa-user me-2"></i>${d.headData}`;
+            
+            setTxt('t-title-data', d.titleData);
+            setTxt('l-nama', d.lNama);
+            setTxt('l-jk', d.lJk);
+            setTxt('l-usia', d.lUsia);
+            setTxt('l-didik', d.lDidik);
+            setTxt('l-kerja', d.lKerja);
+            setTxt('txt-prev', d.btnPrev);
+            setTxt('txt-next', d.btnNext);
+            setTxt('txt-finish', d.btnFinish);
+
+            document.querySelectorAll('.q-title').forEach(el => { 
+                el.innerText = (currentLang === 'ID') ? el.getAttribute('data-id') : el.getAttribute('data-en'); 
+            });
+            document.querySelectorAll('.txt-qhead').forEach(el => el.innerText = d.qHead);
+            document.querySelectorAll('.opt-1').forEach(el => el.innerText = d.opts[0]);
+            document.querySelectorAll('.opt-2').forEach(el => el.innerText = d.opts[1]);
+            document.querySelectorAll('.opt-3').forEach(el => el.innerText = d.opts[2]);
+            document.querySelectorAll('.opt-4').forEach(el => el.innerText = d.opts[3]);
+        }
+
+        function move(n) {
+            if (currentStep === 0 && n === 1) {
+                const inputs = document.querySelectorAll('#step-0 input[required], #step-0 select[required]');
+                let valid = true;
+                inputs.forEach(i => { if(!i.value) valid = false; });
+                if(!valid) return Swal.fire('Oops!', langData[currentLang].alertData, 'warning');
+            }
+
+            if (currentStep > 0 && currentStep <= questionsData.length && n === 1) {
+                const inputVal = document.getElementById(`val-Q${currentStep}`).value;
+                if (!inputVal) return Swal.fire('Oops!', langData[currentLang].alertQ, 'warning');
+            }
+
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            currentStep += n;
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percent = ((currentStep) / (totalSteps-1)) * 100;
+            document.getElementById('p-bar').style.width = percent + '%';
+            document.getElementById('step-now').innerText = currentStep + 1;
+
+            document.getElementById('btn-prev').style.display = (currentStep === 0) ? 'none' : 'block';
+            if (currentStep === questionsData.length) {
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-submit').style.display = 'block';
+            } else {
+                document.getElementById('btn-next').style.display = 'block';
+                document.getElementById('btn-submit').style.display = 'none';
+            }
+        }
+
+        function selectOpt(qIdx, val, el) {
+            document.getElementById(`val-Q${qIdx}`).value = val;
+            const parent = el.parentElement;
+            parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            el.classList.add('selected');
+            setTimeout(() => { if(currentStep < questionsData.length) move(1); }, 350);
+        }
+
+        document.getElementById('skmForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const dataObj = {
+                Tanggal: new Date().toLocaleDateString('id-ID'),
+                Nama: formData.get('Nama') || '-',
+                Pekerjaan: formData.get('Pekerjaan') || '-',
+                Pendidikan: formData.get('Pendidikan') || '-'
+            };
+            
+            let totalScore = 0; let countQuestions = 0;
+            for(let i = 1; i <= questionsData.length; i++) {
+                const val = formData.get(`Q${i}`);
+                if(val) { totalScore += parseInt(val); countQuestions++; }
+            }
+            
+            const ikmScore = countQuestions > 0 ? (totalScore / countQuestions) : 0;
+            dataObj.IKM = ikmScore.toFixed(2);
+            dataObj.Profil = `${dataObj.Pekerjaan} - ${dataObj.Pendidikan}`;
+            dataObj.Mutu = ikmScore >= 3.5 ? 'A (Sangat Baik)' : (ikmScore >= 2.5 ? 'B (Baik)' : 'C (Cukup)');
+            
+            // Simpan Data Lokal (Biar tidak Undefined di Admin)
+            let existingData = JSON.parse(localStorage.getItem('db_skm') || '[]');
+            if (!Array.isArray(existingData)) existingData = []; 
+            existingData.push(dataObj);
+            localStorage.setItem('db_skm', JSON.stringify(existingData));
+            
+            const urlParams = new URLSearchParams(formData);
+            urlParams.append('IKM', dataObj.IKM);
+            urlParams.append('Mutu', dataObj.Mutu);
+            urlParams.append('Profil', dataObj.Profil);
+            urlParams.append('Tanggal', dataObj.Tanggal);
+            
+            fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: urlParams.toString()
+            }).then(response => {
+                Swal.fire('Terima Kasih!', 'Survei SKM Anda telah tersimpan.', 'success').then(() => { window.location.href = '/'; });
+            }).catch(err => {
+                Swal.fire('Info', 'Data tersimpan lokal', 'info').then(() => { window.location.href = '/'; });
+            });
+        });
+    </script>
+</body>
+</html>

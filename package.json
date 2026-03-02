@@ -1,0 +1,29 @@
+{
+  "name": "magang-bpr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
+    "@google/generative-ai": "^0.24.1",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^40.6.1",
+    "electron-packager": "^17.1.2"
+  }
+}

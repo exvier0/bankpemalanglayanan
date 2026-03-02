@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Bank Pemalang</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    
+    <style>
+        /* --- TEMA WARNA (DARK/LIGHT) --- */
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-sidebar: linear-gradient(180deg, #1e3c72, #2a5298);
+            --bg-card: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #e2e8f0;
+        }
+
+        /* Saat Dark Mode Aktif */
+        body.dark-mode {
+            --bg-body: #1a1c23;
+            --bg-sidebar: linear-gradient(180deg, #0f172a, #1e293b);
+            --bg-card: #24262d;
+            --text-main: #e2e8f0;
+            --text-muted: #a0aec0;
+            --border-color: #4a5568;
+        }
+
+        /* Terapkan Variabel */
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: 'Segoe UI', sans-serif; transition: 0.3s; overflow-x: hidden; }
+        .card-stat { background: var(--bg-card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-color); color: var(--text-main); transition: 0.3s; }
+        
+        /* Dark Mode Fixes for Tables & Inputs */
+        body.dark-mode .table { color: var(--text-main); border-color: var(--border-color); }
+        body.dark-mode .table-hover tbody tr:hover { color: var(--text-main); background-color: rgba(255,255,255,0.05); }
+        body.dark-mode .form-control { background-color: #2d3748; border-color: #4a5568; color: #fff; }
+        body.dark-mode .form-control::placeholder { color: #a0aec0; }
+        body.dark-mode .modal-content { background-color: #24262d; color: #fff; }
+        
+        /* SPLASH SCREEN */
+        #welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e3c72, #2a5298); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: 0.8s; }
+        .welcome-logo { width: 130px; height: 130px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; animation: pulse 2s infinite; border: 2px solid rgba(255,255,255,0.3); }
+        .welcome-logo img { width: 75%; height: auto; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .fade-out { opacity: 0; visibility: hidden; }
+        .dashboard-container { opacity: 0; transition: 1s; } .show-content { opacity: 1; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; min-height: 100vh; background: var(--bg-sidebar); color: white; position: fixed; z-index: 100; transition: 0.3s; }
+        .sidebar .brand { padding: 20px; font-weight: bold; background: rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar ul { list-style: none; padding: 0; margin-top: 20px; }
+        .sidebar li a { display: block; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; cursor: pointer; }
+        .sidebar li a:hover, .sidebar li a.active { background: rgba(255,255,255,0.15); color: white; border-left: 4px solid #ffd700; }
+        .sidebar-heading { padding: 20px 25px 10px; font-size: 0.75rem; text-transform: uppercase; color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px; }
+
+        .content { margin-left: 260px; padding: 30px; transition: 0.3s; }
+        .section-view { display: none; animation: slideUp 0.6s; } .section-view.active { display: block; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* CSS KHUSUS ANTRIAN */
+        .queue-num-display { font-size: 3.5rem; font-weight: 800; margin: 15px 0; letter-spacing: 2px; }
+        .btn-panggil { width: 100%; border-radius: 50px; font-weight: bold; padding: 12px; transition: 0.3s; }
+        .btn-panggil:active { transform: scale(0.95); }
+
+        @media print { .sidebar, .no-print, #welcome-overlay { display: none !important; } .content { margin: 0; } .card-stat { box-shadow: none; border: 1px solid black; } }
+    </style>
+</head>
+<body>
+
+<div id="welcome-overlay">
+    <div class="welcome-logo"><img src="logo.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2534/2534197.png'"></div>
+    <h2 class="fw-bold" id="greeting">Selamat Datang</h2>
+    <p class="small text-white-50">Admin Dashboard Bank Pemalang</p>
+</div>
+
+<div class="dashboard-container" id="main-dashboard">
+    <nav class="sidebar">
+        <div class="brand">
+            <img src="logo.png" width="35" onerror="this.style.display='none'"> BANK PEMALANG
+        </div>
+        <ul>
+            <div class="sidebar-heading">Menu Utama</div>
+            <li><a onclick="switchTab('harian')" id="btn-harian" class="active"><i class="fas fa-calendar-day me-3"></i> Harian</a></li>
+            <li><a onclick="switchTab('skm')" id="btn-skm"><i class="fas fa-clipboard-list me-3"></i> SKM (Semester)</a></li>
+            <li><a onclick="switchTab('antrian')" id="btn-antrian"><i class="fas fa-bullhorn me-3"></i> Antrian / Loket</a></li>
+            <li><a onclick="switchTab('produk')" id="btn-produk"><i class="fas fa-box-open me-3"></i> Kelola Produk</a></li>
+            
+            <div class="sidebar-heading">Pengaturan</div>
+            <li><a onclick="openModalPass()" class="text-white" style="cursor: pointer;"><i class="fas fa-key me-3"></i> Ganti Sandi</a></li>
+            
+            <div class="sidebar-heading">Laporan</div>
+            <li><a href="#" onclick="window.print()"><i class="fas fa-print me-3"></i> Print</a></li>
+            <li class="mt-4"><a href="/logout" class="text-warning"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="fw-bold" id="page-title">Dashboard Harian</h3>
+            <div>
+                <button onclick="toggleDarkMode()" class="btn btn-sm btn-dark me-2 no-print" id="btn-theme">
+                    <i class="fas fa-moon"></i> Mode
+                </button>
+                <button onclick="loadData()" class="btn btn-sm btn-primary no-print"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </div>
+
+        <div id="view-harian" class="section-view active">
+            <div class="row g-4 mb-4">
+                <div class="col-md-3"><div class="card-stat border-start border-4 border-primary"><small class="text-muted fw-bold">TOTAL</small><h2 class="fw-bold" id="h-total">0</h2></div></div>
+                <div class="col-md-3"><div class="card-stat border-start border-4 border-warning"><small class="text-muted fw-bold">RATA-RATA</small><h2 class="fw-bold" id="h-avg">0.0</h2></div></div>
+                <div class="col-md-3"><div class="card-stat border-start border-4 border-success"><small class="text-muted fw-bold">KEPUASAN</small><h2 class="fw-bold" id="h-persen">0%</h2></div></div>
+                <div class="col-md-3"><div class="card-stat border-start border-4 border-danger"><small class="text-muted fw-bold">KOMPLAIN</small><h5 class="fw-bold text-danger" id="h-issue">-</h5></div></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-5"><div class="card-stat h-100"><div style="height:200px"><canvas id="chartHarianPie"></canvas></div></div></div>
+                <div class="col-md-7"><div class="card-stat h-100"><div style="height:200px"><canvas id="chartHarianBar"></canvas></div></div></div>
+            </div>
+            <div class="card-stat">
+                <div class="d-flex justify-content-between mb-2"><h5 class="fw-bold">Data Harian</h5><input type="text" class="form-control form-control-sm w-25" placeholder="Cari..." onkeyup="searchTable('tbody-harian',this.value)"></div>
+                <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Waktu</th><th>Rating</th><th>Kategori/Masalah</th><th>Pesan</th><th class="no-print">Aksi</th></tr></thead><tbody id="tbody-harian"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="view-skm" class="section-view">
+            <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i> Data SKM muncul otomatis dari penyimpanan.</div>
+            <div class="row g-4 mb-4">
+                <div class="col-md-4"><div class="card-stat border-start border-4 border-info"><small class="text-muted fw-bold">TOTAL SKM</small><h2 class="fw-bold" id="s-total">0</h2></div></div>
+                <div class="col-md-4"><div class="card-stat border-start border-4 border-success"><small class="text-muted fw-bold">IKM</small><h2 class="fw-bold" id="s-ikm">0.00</h2></div></div>
+                <div class="col-md-4"><div class="card-stat border-start border-4 border-dark"><small class="text-muted fw-bold">MUTU</small><h2 class="fw-bold" id="s-mutu">-</h2></div></div>
+            </div>
+            <div class="card-stat">
+                <div class="d-flex justify-content-between mb-2"><h5 class="fw-bold">Data SKM</h5><input type="text" class="form-control form-control-sm w-25" placeholder="Cari..." onkeyup="searchTable('tbody-skm',this.value)"></div>
+                <div class="table-responsive"><table class="table table-hover"><thead class="table-dark"><tr><th>Tanggal</th><th>Nama</th><th>Profil</th><th>IKM</th><th>Mutu</th><th class="no-print">Aksi</th></tr></thead><tbody id="tbody-skm"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="view-antrian" class="section-view">
+            <div class="alert alert-warning mb-4">
+                <i class="fas fa-volume-up me-2"></i> <b>Kontrol Suara:</b> Pastikan komputer terhubung speaker agar nasabah mendengar panggilan.
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card-stat text-center border-top border-5 border-success position-relative">
+                        <span class="badge bg-success position-absolute top-0 end-0 m-3">TELLER</span>
+                        <div class="text-muted fw-bold mb-2">SEDANG MELAYANI</div>
+                        <div class="queue-num-display text-success" id="adm-curr-A">A-000</div>
+                        <div class="row text-start mt-4 mb-4 bg-light p-3 rounded mx-1 text-dark">
+                            <div class="col-6 border-end">Total Tiket: <b id="adm-total-A">0</b></div>
+                            <div class="col-6 ps-3">Sisa Antrian: <b id="adm-sisa-A" class="text-danger">0</b></div>
+                        </div>
+                        <button class="btn btn-success btn-panggil shadow" onclick="panggilAntrian('A')">
+                            <i class="fas fa-microphone me-2"></i> PANGGIL TELLER (A)
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-stat text-center border-top border-5 border-primary position-relative">
+                        <span class="badge bg-primary position-absolute top-0 end-0 m-3">CS</span>
+                        <div class="text-muted fw-bold mb-2">SEDANG MELAYANI</div>
+                        <div class="queue-num-display text-primary" id="adm-curr-B">B-000</div>
+                        <div class="row text-start mt-4 mb-4 bg-light p-3 rounded mx-1 text-dark">
+                            <div class="col-6 border-end">Total Tiket: <b id="adm-total-B">0</b></div>
+                            <div class="col-6 ps-3">Sisa Antrian: <b id="adm-sisa-B" class="text-danger">0</b></div>
+                        </div>
+                        <button class="btn btn-primary btn-panggil shadow" onclick="panggilAntrian('B')">
+                            <i class="fas fa-microphone me-2"></i> PANGGIL CS (B)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <button onclick="resetAntrian()" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt me-2"></i> Reset Antrian (Hari Baru)
+                </button>
+            </div>
+        </div>
+
+        <div id="view-produk" class="section-view">
+            <div class="card-stat border-start border-4 border-warning">
+                <h5 class="fw-bold mb-3"><i class="fas fa-bullhorn me-2"></i>Running Text (Promo Global)</h5>
+                <div class="input-group">
+                    <span class="input-group-text">Teks Info</span>
+                    <input type="text" id="input-running-text" class="form-control" placeholder="Contoh: Selamat Datang di Bank Pemalang...">
+                    <button class="btn btn-warning" onclick="saveRunningText()">Simpan Teks</button>
+                </div>
+                <small class="text-muted">Teks ini akan muncul berjalan di bagian atas halaman utama (Kiosk).</small>
+            </div>
+            <div class="card-stat border-start border-4 border-info mt-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-print me-2"></i>Konfigurasi Printer</h5>
+                <div class="input-group">
+                    <span class="input-group-text">Nama Printer</span>
+                    <input type="text" id="input-printer-name" class="form-control" placeholder="Contoh: BP Eco 58">
+                    <button class="btn btn-info" onclick="savePrinterName()">Simpan</button>
+                </div>
+                <small class="text-muted">Isikan nama printer untuk opsi cetak termal (Electron).</small>
+            </div>
+
+            <div class="card-stat">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-box me-2"></i>Daftar Produk & Layanan</h5>
+                    <button class="btn btn-primary btn-sm" onclick="openModalProduk()"><i class="fas fa-plus me-1"></i> Tambah Produk</button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Info / Promo (Deskripsi)</th>
+                                <th>Update Terakhir</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-produk">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="modalProduk" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalProdukTitle">Tambah Produk</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="prod-id">
+                <div class="mb-3">
+                    <label class="form-label">Nama Produk</label>
+                    <input type="text" id="prod-nama" class="form-control" placeholder="Contoh: Kredit Usaha Rakyat">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Info / Promo</label>
+                    <textarea id="prod-desc" class="form-control" rows="3" placeholder="Contoh: Bunga 0.5% Flat/Bulan, Promo Merdeka!"></textarea>
+                    <div class="form-text">Tuliskan detail promo atau keunggulan produk di sini.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="simpanProduk()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPass" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i>Ganti Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Password Lama</label>
+                    <input type="password" id="oldPass" class="form-control" placeholder="Password lama">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password Baru</label>
+                    <input type="password" id="newPass" class="form-control" placeholder="Password baru">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="gantiPassword()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // --- DARK MODE LOGIC ---
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeIcon(isDark);
+    }
+
+    function updateThemeIcon(isDark) {
+        const btn = document.getElementById('btn-theme');
+        if(isDark) {
+            btn.innerHTML = '<i class="fas fa-sun text-warning"></i> Light';
+            btn.className = 'btn btn-sm btn-outline-light me-2 no-print';
+        } else {
+            btn.innerHTML = '<i class="fas fa-moon"></i> Dark';
+            btn.className = 'btn btn-sm btn-dark me-2 no-print';
+        }
+    }
+
+    // --- SPLASH & INIT ---
+    window.addEventListener('load', () => {
+        // Init Theme
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            updateThemeIcon(true);
+        } else {
+            updateThemeIcon(false);
+        }
+
+        initDummyData();
+        loadRunningText(); // Load teks berjalan
+
+        // Greeting Logic
+        const h = new Date().getHours(); let s = "Selamat Pagi", i = "☀️";
+        if(h>=10 && h<15){s="Selamat Siang";i="☀️";} else if(h>=15 && h<18){s="Selamat Sore";i="🌤️";} else if(h>=18){s="Selamat Malam";i="🌙";}
+        document.getElementById('greeting').innerText = `${s}, Admin! ${i}`;
+        
+        // Animasi Splash
+        setTimeout(() => { 
+            document.getElementById('welcome-overlay').classList.add('fade-out'); 
+            document.getElementById('main-dashboard').classList.add('show-content'); 
+            document.body.style.overflow = 'auto'; 
+            setTimeout(() => { document.getElementById('welcome-overlay').style.display = 'none' }, 800); 
+        }, 1500);
+        
+        loadData(); // Load Data Dashboard
+        updateQueueUI(); // Load Data Antrian (Awal)
+        
+        // Auto-refresh data setiap 10 detik
+        setInterval(loadData, 10000);
+    });
+
+    // --- NAVIGASI TAB ---
+    function switchTab(t) {
+        document.querySelectorAll('.section-view').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.sidebar a').forEach(e => e.classList.remove('active'));
+        
+        document.getElementById('view-' + t).classList.add('active');
+        document.getElementById('btn-' + t).classList.add('active');
+        
+        let title = 'Dashboard';
+        if(t === 'harian') title = 'Dashboard Harian';
+        else if(t === 'skm') title = 'Data SKM Semester';
+        else if(t === 'antrian') title = 'Kontrol Antrian (Loket)';
+        else if(t === 'produk') title = 'Kelola Produk & Info'; 
+        
+        document.getElementById('page-title').innerText = title;
+        if(t === 'harian' || t === 'skm') loadData();
+        if(t === 'produk') renderProduk(); 
+    }
+
+    // --- LOGIKA DATA (Harian & SKM) ---
+    let charts = {};
+
+    function initDummyData() {
+        if(!localStorage.getItem('db_harian')) {
+            const tgl = new Date().toLocaleDateString('id-ID');
+            const data = [
+                { Tanggal: tgl, rating: 5, kategori: 'Pelayanan', pesan: 'Teller sangat ramah' },
+                { Tanggal: tgl, rating: 4, kategori: 'Fasilitas', pesan: 'AC kurang dingin' },
+            ];
+            localStorage.setItem('db_harian', JSON.stringify(data));
+        }
+        
+        // Init Dummy Produk jika kosong
+        if(!localStorage.getItem('db_produk')) {
+            const produk = [
+                { id: 1, nama: "Kredit Usaha Rakyat", desc: "Bunga 0.6% per bulan, proses cepat 1 hari cair.", updated: new Date().toLocaleDateString() },
+                { id: 2, nama: "Tabungan Simpel", desc: "Bebas biaya admin bulanan, setoran awal ringan.", updated: new Date().toLocaleDateString() },
+                { id: 3, nama: "Deposito Berjangka", desc: "Bunga kompetitif s.d 5% p.a dijamin LPS.", updated: new Date().toLocaleDateString() }
+            ];
+            localStorage.setItem('db_produk', JSON.stringify(produk));
+        }
+    }
+
+    // --- LOGIKA KELOLA PRODUK (BARU) ---
+    function renderProduk() {
+        const tb = document.getElementById('tbody-produk');
+        tb.innerHTML = '';
+        const data = JSON.parse(localStorage.getItem('db_produk') || '[]');
+
+        if(data.length === 0) {
+            tb.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada data produk.</td></tr>';
+            return;
+        }
+
+        data.forEach(p => {
+            tb.innerHTML += `
+                <tr>
+                    <td class="fw-bold">${p.nama}</td>
+                    <td>${p.desc}</td>
+                    <td><small class="text-muted">${p.updated}</small></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning me-1" onclick="editProduk(${p.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="hapusProduk(${p.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    let editId = null;
+    const modalProdukEl = new bootstrap.Modal(document.getElementById('modalProduk'));
+
+    function openModalProduk() {
+        editId = null;
+        document.getElementById('modalProdukTitle').innerText = "Tambah Produk";
+        document.getElementById('prod-nama').value = "";
+        document.getElementById('prod-desc').value = "";
+        modalProdukEl.show();
+    }
+
+    function editProduk(id) {
+        const data = JSON.parse(localStorage.getItem('db_produk') || '[]');
+        const item = data.find(x => x.id === id);
+        if(item) {
+            editId = id;
+            document.getElementById('modalProdukTitle').innerText = "Edit Produk";
+            document.getElementById('prod-nama').value = item.nama;
+            document.getElementById('prod-desc').value = item.desc;
+            modalProdukEl.show();
+        }
+    }
+
+    function simpanProduk() {
+        const nama = document.getElementById('prod-nama').value;
+        const desc = document.getElementById('prod-desc').value;
+        if(!nama) return Swal.fire('Error', 'Nama produk wajib diisi', 'error');
+
+        let data = JSON.parse(localStorage.getItem('db_produk') || '[]');
+        const tgl = new Date().toLocaleDateString('id-ID');
+
+        if(editId) {
+            const idx = data.findIndex(x => x.id === editId);
+            if(idx !== -1) {
+                data[idx].nama = nama;
+                data[idx].desc = desc;
+                data[idx].updated = tgl;
+            }
+        } else {
+            const newId = data.length > 0 ? Math.max(...data.map(p => p.id)) + 1 : 1;
+            data.push({ id: newId, nama: nama, desc: desc, updated: tgl });
+        }
+
+        localStorage.setItem('db_produk', JSON.stringify(data));
+        modalProdukEl.hide();
+        renderProduk();
+        Swal.fire('Sukses', 'Data produk berhasil disimpan', 'success');
+    }
+
+    function hapusProduk(id) {
+        Swal.fire({
+            title: 'Hapus Produk?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
+            showCancelButton: true, confirmButtonText: 'Hapus', confirmButtonColor: '#d33'
+        }).then((res) => {
+            if(res.isConfirmed) {
+                let data = JSON.parse(localStorage.getItem('db_produk') || '[]');
+                data = data.filter(x => x.id !== id);
+                localStorage.setItem('db_produk', JSON.stringify(data));
+                renderProduk();
+                Swal.fire('Terhapus', 'Produk dihapus', 'success');
+            }
+        });
+    }
+
+    // --- LOGIKA RUNNING TEXT ---
+    function loadRunningText() {
+        const txt = localStorage.getItem('info_running_text') || "Selamat Datang di Bank Pemalang";
+        document.getElementById('input-running-text').value = txt;
+    }
+    
+    function saveRunningText() {
+        const val = document.getElementById('input-running-text').value;
+        localStorage.setItem('info_running_text', val);
+        Swal.fire('Tersimpan', 'Running text halaman depan diperbarui!', 'success');
+    }
+
+    // --- LOGIKA UMUM (Chart, Antrian, Search) ---
+    function searchTable(id, val) {
+        const rows = document.getElementById(id).getElementsByTagName('tr');
+        val = val.toLowerCase();
+        for(let r of rows) {
+            let txt = r.innerText.toLowerCase();
+            r.style.display = txt.includes(val) ? '' : 'none';
+        }
+    }
+
+    function loadData() {
+        try {
+            const dataHarian = JSON.parse(localStorage.getItem('db_harian') || '[]');
+            const dataSKM = JSON.parse(localStorage.getItem('db_skm') || '[]');
+            procH(dataHarian);
+            procS(dataSKM);
+        } catch(e) { console.error("Gagal load data", e); }
+    }
+
+    function procH(d) {
+        const tb = document.getElementById('tbody-harian'); tb.innerHTML = ''; 
+        let st = { t:0, sb:0, p:0, is:{} }, stars = [0,0,0,0,0];
+        if(d.length === 0) tb.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data masuk.</td></tr>';
+        
+        d.slice().reverse().forEach((r, idx) => {
+            let b = parseInt((r.rating||0).toString().substring(0, 1)) || 0;
+            let m = r.kategori || 'Umum';
+            st.t++; st.sb += b; if(b>=4) st.p++; 
+            if(b>=1 && b<=5) stars[b-1]++;
+            if(b<=3) st.is[m] = (st.is[m]||0)+1;
+
+            tb.innerHTML += `<tr><td>${r.Tanggal||'-'}</td><td><span class="badge ${b>=4?'bg-success':'bg-warning'}">${b}</span></td><td>${m}</td><td>${r.pesan||'-'}</td><td class="no-print"><button class="btn btn-sm btn-danger" onclick="deleteHarian(${idx})"><i class="fas fa-trash"></i></button></td></tr>`;
+        });
+
+        let topIssue = "-"; let maxI = 0;
+        for(let k in st.is) { if(st.is[k]>maxI){maxI=st.is[k]; topIssue=k;} }
+        document.getElementById('h-total').innerText = st.t; 
+        document.getElementById('h-avg').innerText = st.t ? (st.sb/st.t).toFixed(1) : "0.0";
+        document.getElementById('h-persen').innerText = st.t ? Math.round((st.p/st.t)*100)+"%" : "0%";
+        document.getElementById('h-issue').innerText = topIssue;
+        rChart('chartHarianPie','doughnut',['5★','4★','3★','2★','1★'], stars.reverse(), ['#198754','#20c997','#ffc107','#fd7e14','#dc3545']);
+        rChart('chartHarianBar','bar',['Pelayanan','Fasilitas','Waktu','Produk'], [10,5,8,3], '#0d6efd');
+    }
+
+    function procS(d) {
+        const tb = document.getElementById('tbody-skm'); tb.innerHTML = '';
+        if(d.length === 0) tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada data SKM</td></tr>';
+        d.forEach((r, idx) => { tb.innerHTML += `<tr><td>${r.Tanggal||'-'}</td><td>${r.Nama||'-'}</td><td>${r.Profil||'-'}</td><td>${r.IKM||0}</td><td>${r.Mutu||'-'}</td><td class="no-print"><button class="btn btn-sm btn-danger" onclick="deleteSKM(${idx})"><i class="fas fa-trash"></i></button></td></tr>`; });
+        document.getElementById('s-total').innerText = d.length;
+        let totIKM = d.reduce((acc, curr) => acc + (parseFloat(curr.IKM)||0), 0);
+        document.getElementById('s-ikm').innerText = d.length ? (totIKM/d.length).toFixed(2) : "0.00";
+        document.getElementById('s-mutu').innerText = (totIKM/d.length) > 3 ? "Baik" : "Cukup";
+    }
+
+    function rChart(id, typ, lbl, dat, col) {
+        const ctx = document.getElementById(id).getContext('2d'); 
+        if(charts[id]) charts[id].destroy();
+        let datasets = [{ data: dat, borderWidth: 1, backgroundColor: col }];
+        charts[id] = new Chart(ctx, { type: typ, data: { labels: lbl, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', display: typ !== 'bar' } } } });
+    }
+
+    // --- HAPUS DATA SURVEI ---
+    function deleteHarian(idx) {
+        const raw = JSON.parse(localStorage.getItem('db_harian')||'[]');
+        const record = raw.slice().reverse()[idx];
+        if(!record) return;
+        Swal.fire({title:'Hapus entri?',text:'Data akan dihapus permanen.',icon:'warning',showCancelButton:true,confirmButtonText:'Ya, hapus'}).then(res=>{
+            if(res.isConfirmed) {
+                // remove from localstorage
+                const origIndex = raw.length - 1 - idx;
+                raw.splice(origIndex,1);
+                localStorage.setItem('db_harian',JSON.stringify(raw));
+                loadData();
+                // tell server also
+                fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({match:record})});
+            }
+        });
+    }
+    function deleteSKM(idx) {
+        const raw = JSON.parse(localStorage.getItem('db_skm')||'[]');
+        const record = raw[idx];
+        if(!record) return;
+        Swal.fire({title:'Hapus entri SKM?',text:'Data akan dihapus permanen.',icon:'warning',showCancelButton:true,confirmButtonText:'Ya, hapus'}).then(res=>{
+            if(res.isConfirmed) {
+                raw.splice(idx,1);
+                localStorage.setItem('db_skm',JSON.stringify(raw));
+                loadData();
+                fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({match:record})});
+            }
+        });
+    }
+
+    // === TAMBAHKAN FORM KONFIGURASI PRINTER ===
+    function savePrinterName(){
+        const name = document.getElementById('input-printer-name').value.trim();
+        localStorage.setItem('printerName', name);
+        Swal.fire('Tersimpan','Nama printer disimpan','success');
+    }
+
+    // --- ANTRIAN ---
+    function updateQueueUI() {
+        let totA = localStorage.getItem('antrian_A_total') || 0; let curA = localStorage.getItem('antrian_A_current') || 0;
+        let totB = localStorage.getItem('antrian_B_total') || 0; let curB = localStorage.getItem('antrian_B_current') || 0;
+        document.getElementById('adm-curr-A').innerText = 'A-' + curA.toString().padStart(3,'0');
+        document.getElementById('adm-total-A').innerText = totA;
+        document.getElementById('adm-sisa-A').innerText = totA - curA;
+        document.getElementById('adm-curr-B').innerText = 'B-' + curB.toString().padStart(3,'0');
+        document.getElementById('adm-total-B').innerText = totB;
+        document.getElementById('adm-sisa-B').innerText = totB - curB;
+    }
+    setInterval(updateQueueUI, 1000);
+
+    function panggilAntrian(kode) {
+        let keyTotal = (kode === 'A') ? 'antrian_A_total' : 'antrian_B_total';
+        let keyCurr = (kode === 'A') ? 'antrian_A_current' : 'antrian_B_current';
+        let total = parseInt(localStorage.getItem(keyTotal) || 0);
+        let current = parseInt(localStorage.getItem(keyCurr) || 0);
+
+        if (current < total) {
+            current++;
+            localStorage.setItem(keyCurr, current);
+            updateQueueUI();
+            let layanan = (kode === 'A') ? 'Teller' : 'Customer Service';
+            let teks = `Nomor Antrian, ${kode}, ${ejaNomor(current)}, Silakan ke, ${layanan}`;
+            speak(teks);
+        } else {
+            Swal.fire('Info', 'Tidak ada antrian menunggu!', 'info');
+        }
+    }
+
+    function ejaNomor(num) {
+        let str = num.toString().padStart(3, '0');
+        let ejaan = "";
+        for (let char of str) {
+            if(char === '0') ejaan += " Kosong "; else if(char === '1') ejaan += " Satu "; else if(char === '2') ejaan += " Dua "; else if(char === '3') ejaan += " Tiga "; else if(char === '4') ejaan += " Empat "; else if(char === '5') ejaan += " Lima "; else if(char === '6') ejaan += " Enam "; else if(char === '7') ejaan += " Tujuh "; else if(char === '8') ejaan += " Delapan "; else if(char === '9') ejaan += " Sembilan ";
+        }
+        return ejaan;
+    }
+
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); 
+            let msg = new SpeechSynthesisUtterance(); msg.text = text; msg.lang = 'id-ID'; msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        }
+    }
+
+    function resetAntrian() {
+        Swal.fire({ 
+            title: 'Reset Hari Ini?', 
+            text: "Semua hitungan kembali ke 0.", 
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Reset',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.setItem('antrian_A_total', 0);
+                localStorage.setItem('antrian_A_current', 0);
+                localStorage.setItem('antrian_B_total', 0);
+                localStorage.setItem('antrian_B_current', 0);
+                updateQueueUI();
+                Swal.fire('Sukses', 'Antrian berhasil di-reset!', 'success');
+            }
+        });
+    }
+
+    // --- GANTI PASSWORD LOGIC ---
+    const modalPassEl = new bootstrap.Modal(document.getElementById('modalPass'));
+    function openModalPass() {
+        document.getElementById('oldPass').value = "";
+        document.getElementById('newPass').value = "";
+        modalPassEl.show();
+    }
+
+    function gantiPassword() {
+        const oldP = document.getElementById('oldPass').value;
+        const newP = document.getElementById('newPass').value;
+        
+        if(!oldP || !newP) {
+            return Swal.fire('Error', 'Harap isi semua kolom', 'error');
+        }
+        
+        // Disini bisa ditambahkan logika ke server jika diperlukan
+        // Untuk saat ini simulasi sukses
+        Swal.fire('Sukses', 'Password berhasil diubah (Simulasi)', 'success');
+        modalPassEl.hide();
+    }
+</script>
+</body>
+</html>

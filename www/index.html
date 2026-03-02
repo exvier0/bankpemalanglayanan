@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Layanan - Bank Pemalang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === STYLE DASAR (TETAP) === */
+        :root {
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            --border-glass: rgba(255, 255, 255, 0.3);
+            --text-color: #ffffff;
+            --card-hover: rgba(255, 255, 255, 0.2);
+        }
+        .dark-theme {
+            --bg-glass: rgba(0, 0, 0, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --text-color: #e0e0e0;
+            --card-hover: rgba(0, 0, 0, 0.8);
+        }
+        body {
+            font-family: 'Poppins', sans-serif; min-height: 100vh; margin: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.9), rgba(42, 82, 152, 0.9)), url('cover.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed; color: var(--text-color);
+            overflow-x: hidden; transition: background 0.5s;
+        }
+
+        /* RUNNING TEXT */
+        .news-ticker {
+            width: 100%; background: rgba(0, 0, 0, 0.5); color: white; padding: 8px 0;
+            overflow: hidden; position: fixed; top: 0; left: 0; z-index: 900; backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem;
+        }
+        .ticker-content { display: inline-block; white-space: nowrap; animation: ticker 30s linear infinite; padding-left: 100%; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        .top-tools { position: absolute; top: 50px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: 0.3s; font-size: 14px; display: flex; align-items: center; gap: 5px;
+        }
+        .tool-btn:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
+
+        /* CONTAINER UTAMA */
+        .container-menu { 
+            text-align: center; width: 100%; max-width: 1100px; padding: 20px; 
+            opacity: 0; transform: translateY(30px); transition: 1s ease;
+            margin-top: 80px; margin-bottom: 100px;
+        }
+        .menu-show { opacity: 1; transform: translateY(0); }
+
+        .logo-box {
+            width: 110px; height: 110px; background: rgba(255, 255, 255, 0.95); border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; 
+            box-shadow: 0 0 30px rgba(255,255,255,0.3); border: 4px solid rgba(255,255,255,0.2);
+        }
+        .logo-box img { width: 65%; height: auto; }
+        
+        /* CARD MENU UTAMA */
+        .card-menu {
+            background: var(--bg-glass); backdrop-filter: blur(15px); border: 1px solid var(--border-glass);
+            border-radius: 25px; padding: 30px 20px; transition: all 0.4s ease; cursor: pointer; height: 100%; min-height: 240px;
+            text-decoration: none; color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .card-menu:hover { background: var(--card-hover); transform: translateY(-10px) scale(1.02); }
+        .icon-circle { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 15px; transition: 0.4s; }
+        .menu-harian .icon-circle { color: #4ade80; } .menu-skm .icon-circle { color: #60a5fa; } 
+        .menu-antrian .icon-circle { color: #ef4444; } .menu-kalkulator .icon-circle { color: #d946ef; } 
+        .btn-arrow { margin-top: 15px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 50px; }
+        .card-menu h4 { font-size: 1.1rem; margin-bottom: 5px; }
+        .live-badge { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 5px; }
+        .live-badge span { color: #facc15; font-weight: bold; }
+        .small-disclaimer { font-size: 0.7rem; color: rgba(255, 255, 255, 0.7); margin-top: -5px; margin-bottom: 5px; font-style: italic; }
+
+        /* SPLASH SCREEN */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1e3c72, #2a5298); z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease-in-out, visibility 1s;
+        }
+        .splash-logo-container { width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.2); animation: pulseLogo 2s infinite; margin-bottom: 20px; }
+        .splash-logo-container img { width: 65%; height: auto; }
+        .loading-text { letter-spacing: 3px; font-size: 14px; opacity: 0.8; animation: blink 1.5s infinite; }
+        .fade-out { opacity: 0; visibility: hidden; }
+        @keyframes pulseLogo { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        /* FOOTER BAWAH */
+        .glass-footer {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 1100px; display: flex; justify-content: space-around; align-items: center;
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px;
+            padding: 12px 30px; color: white; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); z-index: 100;
+        }
+        .footer-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+        .footer-item i { font-size: 1.2rem; color: #ffd700; }
+        .footer-item div h4 { margin: 0; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
+        .footer-item div p { margin: 0; opacity: 0.9; font-size: 0.8rem; }
+        .ai-badge { position: fixed; bottom: 100px; right: 30px; z-index: 2000; cursor: pointer; width: 60px; height: 60px; background: white; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
+        .ai-badge:hover { transform: scale(1.1); } .ai-badge img { width: 60%; }
+        /* Chat panel untuk widget CE AI (hanya di index) */
+        #chat-panel { position: fixed; bottom: 180px; right: 30px; width: 360px; height: 520px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; z-index: 2001; display: none; flex-direction: column; }
+        #chat-panel .chat-header { background: linear-gradient(90deg,#1e3c72,#2a5298); color: #fff; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        #chat-panel .chat-header strong { font-size: 0.95rem; }
+        #chat-panel .chat-close-btn { background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+        #chat-panel iframe { border: 0; width: 100%; height: calc(100% - 44px); display: block; }
+
+        /* === UPDATE 1: PRODUK LEBIH BESAR & CENTER === */
+        .produk-section { margin-top: 50px; text-align: center; } /* Center judul section */
+        .section-title { 
+            font-size: 1.3rem; font-weight: bold; margin-bottom: 25px; 
+            display: inline-block; padding-bottom: 5px;
+            border-bottom: 3px solid #facc15; color: var(--text-color);
+        }
+        .shopee-scroll { 
+            display: flex; overflow-x: auto; gap: 20px; padding: 15px 0; 
+            justify-content: center; /* INI KUNCINYA AGAR CENTER */
+            scrollbar-width: thin; 
+        }
+        .shopee-scroll::-webkit-scrollbar { height: 4px; }
+        .shopee-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+
+        /* Kartu Produk Dibesarkan */
+        .prod-card-mini {
+            min-width: 200px; max-width: 200px; /* Diperbesar dari 140px */
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 25px 20px; text-align: center; transition: 0.3s; cursor: pointer;
+            text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .prod-card-mini:hover { background: rgba(255,255,255,0.2); transform: translateY(-8px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .prod-icon { font-size: 2.5rem; margin-bottom: 15px; color: #facc15; } /* Icon diperbesar */
+        .prod-name { font-size: 1rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; } /* Font diperbesar */
+        .prod-desc { font-size: 0.8rem; opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* === UPDATE 2: JAM DIGITAL KECIL === */
+        .center-clock-container { margin-top: 40px; margin-bottom: 10px; text-align: center; }
+        .big-clock { 
+            font-size: 1.5rem; /* Diperkecil dari 2.8rem */
+            font-weight: 600; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); line-height: 1; 
+        }
+        .date-clock { 
+            font-size: 0.85rem; font-weight: 400; opacity: 0.8; margin-top: 5px; 
+            text-transform: uppercase; letter-spacing: 1px; 
+        }
+
+        @media (max-width: 768px) {
+            .glass-footer { flex-direction: column; gap: 10px; align-items: center; bottom: 0; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; }
+            .ai-badge { bottom: 180px; right: 20px; } .top-tools { top: 60px; }
+            .prod-card-mini { min-width: 160px; max-width: 160px; } /* Di HP agak kecil dikit biar muat */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="news-ticker"><div class="ticker-content" id="info-berjalan">Memuat Informasi...</div></div>
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
+    <div id="splash-screen">
+        <div class="splash-logo-container"><img src="logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <h2 class="fw-bold mb-0 text-white">BANK PEMALANG</h2>
+        <p class="loading-text mt-3 text-white">MEMUAT SISTEM...</p>
+    </div>
+
+    <div class="ai-badge" title="CS Virtual" onclick="toggleChat()" id="aiBadge">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI">
+    </div>
+
+    <div id="chat-panel" aria-hidden="true">
+        <div class="chat-header">
+            <strong>CS Virtual</strong>
+            <button class="chat-close-btn" aria-label="Tutup" onclick="toggleChat()">×</button>
+        </div>
+        <iframe id="chat-iframe" src="ce_ai.html" title="CS Virtual Chat"></iframe>
+    </div>
+
+    <div class="top-tools">
+        <button class="tool-btn" onclick="toggleDarkMode()"><i class="fas fa-moon" id="icon-mode"></i></button>
+        <button class="tool-btn" onclick="toggleLang()"><img src="https://flagcdn.com/w20/id.png" id="img-flag" width="20" style="vertical-align: middle;"><span id="txt-lang" class="ms-1">ID</span></button>
+        <button class="tool-btn" onclick="window.location.href='login.html'" title="Admin Login"><i class="fas fa-user-shield"></i> <span class="d-none d-sm-inline">Login Admin</span></button>
+    </div>
+
+    <div class="container-menu" id="main-menu">
+        <div class="logo-box"><img src="logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <h1 class="fw-bold mb-1" id="t-welcome">SELAMAT DATANG</h1>
+        <p class="opacity-75 mb-5" id="t-subtitle">Silakan pilih jenis layanan Anda</p>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-3 col-sm-6"><a href="harian.html" class="card-menu menu-harian"><div class="icon-circle"><i class="fas fa-smile-beam"></i></div><h4 class="fw-bold" id="t-menu1">Survei Harian</h4><div class="btn-arrow"><span class="txt-start">Mulai</span> <i class="fas fa-chevron-right ms-1"></i></div></a></div>
+            <div class="col-md-3 col-sm-6"><a href="skm.html" class="card-menu menu-skm"><div class="icon-circle"><i class="fas fa-file-contract"></i></div><h4 class="fw-bold" id="t-menu2">Survei SKM</h4><div class="btn-arrow"><span class="txt-start">Mulai</span> <i class="fas fa-chevron-right ms-1"></i></div></a></div>
+            <div class="col-md-3 col-sm-6"><a href="antrian.html" class="card-menu menu-antrian"><div class="icon-circle"><i class="fas fa-ticket-alt"></i></div><h4 class="fw-bold" id="t-menu5">Ambil Antrian</h4><div class="live-badge"><i class="fas fa-volume-up me-1"></i><span id="lbl-live">A-000 | B-000</span></div><div class="btn-arrow"><span class="txt-take">Ambil</span> <i class="fas fa-chevron-right ms-1"></i></div></a></div>
+            <div class="col-md-3 col-sm-6"><a href="kalkulator.html" class="card-menu menu-kalkulator"><div class="icon-circle"><i class="fas fa-calculator"></i></div><h4 class="fw-bold" id="t-menu3">Simulasi Kredit</h4><p class="small-disclaimer">*Hanya estimasi awal</p><div class="btn-arrow"><span class="txt-calc">Hitung</span> <i class="fas fa-chevron-right ms-1"></i></div></a></div>
+        </div>
+
+        <div class="produk-section">
+            <div class="section-title">Produk & Promo Terbaru 🔥</div>
+            <div class="shopee-scroll" id="produk-container">
+                <div class="text-white-50 w-100 text-center py-3">Memuat produk...</div>
+            </div>
+        </div>
+
+        <div class="center-clock-container">
+            <div class="big-clock" id="jam-digital">00:00:00</div>
+            <div class="date-clock" id="tanggal-digital">SENIN, 1 JANUARI 2026</div>
+        </div>
+
+        <div class="mt-4 small opacity-50">&copy; 2026 PT BPR Bank Pemalang (Perseroda).</div>
+    </div>
+
+    <footer class="glass-footer">
+        <div class="footer-item"><i class="fas fa-map-marker-alt"></i><div><h4>Lokasi</h4><p>Komplek Pasar Kota Blok D No.1 Pemalang></div></div>
+        <div class="footer-item"><i class="fas fa-clock"></i><div><h4>Jam Operasional</h4><p>Senin-Jumat: 08.00 - 15.00</p></div></div>
+        <div class="footer-item"><i class="fas fa-phone-alt"></i><div><h4>Call Center</h4><p>(+62)853-8567-0249</p></div></div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function loadRunningText(){let e=localStorage.getItem("info_running_text")||"📢 Selamat Datang di BPR Bank Pemalang | Bunga Deposito Bersaing & Aman Dijamin LPS";document.getElementById("info-berjalan").innerHTML=`<b>INFO:</b> ${e}`}loadRunningText();
+        function loadProdukShopee(){const e=document.getElementById("produk-container"),t=JSON.parse(localStorage.getItem("db_produk")||"[]");if(0===t.length)return void(e.innerHTML='<div class="text-white-50 small w-100">Belum ada promo aktif.</div>');e.innerHTML="",t.forEach(t=>{let a="fa-star",n=t.nama.toLowerCase();n.includes("kredit")&&(a="fa-money-bill-wave"),n.includes("tabung")&&(a="fa-piggy-bank"),n.includes("haji")&&(a="fa-kaaba");e.innerHTML+=`<div class="prod-card-mini"><i class="fas ${a} prod-icon"></i><div class="prod-name">${t.nama}</div><div class="prod-desc">${t.desc}</div></div>`})}loadProdukShopee();
+        function updateClock(){const e=new Date,t=e.toLocaleTimeString("id-ID",{hour12:!1}).replaceAll(".",":"),a=e.toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});document.getElementById("jam-digital").innerText=t,document.getElementById("tanggal-digital").innerText=a}setInterval(updateClock,1e3),updateClock();
+        const audio=document.getElementById("clickSound");document.querySelectorAll("button, a.card-menu, .ai-badge, .prod-card-mini").forEach(e=>{e.addEventListener("click",()=>{audio.currentTime=0,audio.volume=.4,audio.play().catch(()=>{})})});
+        function updateLiveInfo(){let e=localStorage.getItem("antrian_A_current")||"0",t=localStorage.getItem("antrian_B_current")||"0";const a=document.getElementById("lbl-live");a&&(a.innerText=`A-${e} | B-${t}`)}setInterval(updateLiveInfo,1e3),updateLiveInfo();
+        window.addEventListener("load",()=>{setTimeout(()=>{document.getElementById("splash-screen").classList.add("fade-out"),document.getElementById("main-menu").classList.add("menu-show"),setTimeout(()=>{document.getElementById("splash-screen").style.display="none",document.body.style.overflow="auto"},1e3)},2e3)}),window.addEventListener("storage",()=>{loadRunningText(),loadProdukShopee()});
+        let isDark=!1;function toggleDarkMode(){isDark=!isDark;const e=document.body,t=document.getElementById("icon-mode");isDark?(e.classList.add("dark-theme"),t.classList.remove("fa-moon"),t.classList.add("fa-sun"),e.style.backgroundImage="linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)), url('cover.jpg')"):(e.classList.remove("dark-theme"),t.classList.remove("fa-sun"),t.classList.add("fa-moon"),e.style.backgroundImage="linear-gradient(135deg, rgba(30, 60, 114, 0.9), rgba(42, 82, 152, 0.9)), url('cover.jpg')")}
+        let currentLang="ID";const dictionary={ID:{flag:"https://flagcdn.com/w20/id.png",welcome:"SELAMAT DATANG",subtitle:"Silakan pilih jenis layanan Anda",menu1:"Survei Harian",menu2:"Survei SKM",menu5:"Ambil Antrian",menu3:"Simulasi Kredit",btnStart:"Mulai",btnCalc:"Hitung",btnTake:"Ambil"},EN:{flag:"https://flagcdn.com/w20/us.png",welcome:"WELCOME",subtitle:"Please select your service type",menu1:"Daily Survey",menu2:"Service Survey",menu5:"Get Ticket",menu3:"Loan Simulation",btnStart:"Start",btnCalc:"Calculate",btnTake:"Get"}};function toggleLang(){currentLang="ID"===currentLang?"EN":"ID";const e=dictionary[currentLang];document.getElementById("img-flag").src=e.flag,document.getElementById("txt-lang").innerText=currentLang,document.getElementById("t-welcome").innerText=e.welcome,document.getElementById("t-subtitle").innerText=e.subtitle,document.getElementById("t-menu1").innerText=e.menu1,document.getElementById("t-menu2").innerText=e.menu2,document.getElementById("t-menu3").innerText=e.menu3,document.getElementById("t-menu5").innerText=e.menu5,document.querySelectorAll(".txt-start").forEach(t=>t.innerText=e.btnStart),document.querySelectorAll(".txt-calc").forEach(t=>t.innerText=e.btnCalc),document.querySelectorAll(".txt-take").forEach(t=>t.innerText=e.btnTake)}
+
+        // Toggle chat panel for CE AI widget (inline on index)
+        function toggleChat(){
+            const panel = document.getElementById('chat-panel');
+            const badge = document.getElementById('aiBadge');
+            if(!panel || !badge) return;
+            const isHidden = panel.style.display === 'none' || panel.style.display === '';
+            if(isHidden){
+                panel.style.display = 'flex';
+                panel.setAttribute('aria-hidden','false');
+                badge.style.display = 'none';
+            } else {
+                panel.style.display = 'none';
+                panel.setAttribute('aria-hidden','true');
+                badge.style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>

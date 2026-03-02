@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Survey Bank Pemalang</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* BACKGROUND & UMUM */
+        body {
+            background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        /* KARTU SURVEI */
+        .card-survey {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 25px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* LOGO */
+        .icon-wrapper {
+            width: 80px; height: 80px;
+            background: #e3f2fd;
+            color: #004e92;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            margin-bottom: 20px;
+        }
+
+        /* --- EMOJI RATING (BAGIAN BARU) --- */
+        .emoji-widget {
+            display: flex;
+            flex-direction: row-reverse; /* Dibalik agar logika CSS jalan */
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .emoji-widget input { display: none; } /* Sembunyikan radio button asli */
+        
+        .emoji-widget label {
+            font-size: 50px; /* Ukuran Emoji */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            /* Trik: Emoji yang belum dipilih jadi hitam putih & pudar */
+            filter: grayscale(100%);
+            opacity: 0.4;
+            padding: 0 5px;
+        }
+
+        /* Efek saat Dipilih / Di-hover */
+        .emoji-widget input:checked ~ label,
+        .emoji-widget label:hover, 
+        .emoji-widget label:hover ~ label {
+            /* Kembalikan warnanya jadi hidup */
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.2); /* Membesar sedikit */
+            text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        /* -------------------------------- */
+
+
+        /* LOGIKA TAMPILAN (HIDDEN/SHOW) */
+        .box-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .show { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* TOMBOL-TOMBOL */
+        .btn-wa {
+            background-color: #25D366;
+            color: white;
+            border: none; padding: 12px; width: 100%; border-radius: 50px; font-weight: 600; margin-top: 15px; text-decoration: none; display: block;
+        }
+        .btn-wa:hover { background-color: #1ebe57; color: white; }
+        .btn-kirim {
+            background: #004e92; color: white; border: none; padding: 12px; width: 100%; border-radius: 50px; font-weight: 600; margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card-survey">
+            
+            <div class="icon-wrapper"><i class="fas fa-university"></i></div>
+            <h4 class="fw-bold" style="color: #004e92;">BANK PEMALANG</h4>
+            <p class="text-muted small">Bagaimana pengalaman Anda?</p>
+
+            <div class="emoji-widget">
+                <input type="radio" name="rate" id="rate-5" onclick="cek(5)"> 
+                <label for="rate-5">😍</label>
+                
+                <input type="radio" name="rate" id="rate-4" onclick="cek(4)"> 
+                <label for="rate-4">😊</label>
+                
+                <input type="radio" name="rate" id="rate-3" onclick="cek(3)"> 
+                <label for="rate-3">😐</label>
+                
+                <input type="radio" name="rate" id="rate-2" onclick="cek(2)"> 
+                <label for="rate-2">😞</label>
+                
+                <input type="radio" name="rate" id="rate-1" onclick="cek(1)"> 
+                <label for="rate-1">😠</label>
+            </div>
+            
+            <div id="pesan-rating" class="fw-bold mt-2 mb-3" style="height: 25px; color: #004e92;"></div>
+
+            <div id="box-sedih" class="box-content text-start">
+                <div class="alert alert-danger py-2 small">
+                    Maaf membuat Anda tidak nyaman 🙏
+                </div>
+                <select class="form-select mb-2" id="kategori">
+                    <option>Pelayanan Petugas Judes/Lama</option>
+                    <option>Antrian Crowded</option>
+                    <option>ATM / Sistem Bermasalah</option>
+                    <option>Fasilitas (AC/Toilet)</option>
+                </select>
+                <textarea class="form-control mb-2" id="saran" rows="2" placeholder="Ceritakan detailnya..."></textarea>
+                <button class="btn-kirim" onclick="kirim()">KIRIM MASUKAN</button>
+            </div>
+
+            <div id="box-senang" class="box-content">
+                <div class="alert alert-success py-3">
+                    <h4 class="fw-bold mb-1">Terima Kasih! ✨</h4>
+                    <p class="mb-0 small">Senang bisa melayani Anda.</p>
+                    <small class="text-muted">Have a great day!</small>
+                </div>
+                
+                <p class="text-muted small mb-1 mt-3">Ada pertanyaan lain? Chat CS kami:</p>
+                <a href="https://wa.me/6281234567890" class="btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i> Chat CS WhatsApp
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function cek(n) {
+            const boxSedih = document.getElementById('box-sedih');
+            const boxSenang = document.getElementById('box-senang');
+            const pesan = document.getElementById('pesan-rating');
+            
+            const kata = ["Sangat Kecewa", "Kurang Puas", "Biasa Saja", "Puas", "Sangat Puas!"];
+            pesan.innerText = kata[n-1];
+
+            if (n <= 3) {
+                boxSedih.classList.add('show');
+                boxSenang.classList.remove('show');
+            } else {
+                boxSedih.classList.remove('show');
+                boxSenang.classList.add('show');
+            }
+        }
+
+        function kirim() {
+            const btn = document.querySelector('.btn-kirim');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            setTimeout(() => {
+                alert("Masukan diterima! Terima kasih.");
+                window.location.reload();
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

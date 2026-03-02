@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survei Harian - Bank Pemalang</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="common.css">
+    
+    <style>
+        /* === VARIAN TEMA (LIGHT/DARK) === */
+        :root {
+            --bg-overlay: rgba(30, 60, 114, 0.85);
+            --bg-overlay-2: rgba(42, 82, 152, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --text-sub: #6c757d;
+            --input-bg: #f1f3f5;
+            --input-border: #e9ecef;
+        }
+
+        .dark-theme {
+            --bg-overlay: rgba(15, 23, 42, 0.95);
+            --bg-overlay-2: rgba(30, 41, 59, 0.95);
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --text-color: #f8fafc;
+            --text-sub: #94a3b8;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh; margin: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            /* Background Menggunakan Variabel */
+            background: linear-gradient(135deg, var(--bg-overlay), var(--bg-overlay-2)), url('cover.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            padding: 20px; transition: background 0.5s ease;
+        }
+
+        /* Tombol Tools (Translate & Dark Mode) - Baru */
+        .top-tools {
+            position: absolute; top: 20px; right: 20px;
+            display: flex; gap: 10px; z-index: 1000;
+        }
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: 0.3s; font-size: 14px;
+        }
+        .tool-btn:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
+
+        /* Tombol Kembali: moved to common.css */
+
+        /* Kartu Utama (Glass Effect) */
+        .card-survey {
+            background: var(--card-bg); 
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            width: 100%; max-width: 450px;
+            border-radius: 25px; 
+            padding: 35px 30px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            position: relative;
+            animation: fadeIn 0.8s ease;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Logo Circle */
+        .logo-area { 
+            width: 90px; height: 90px; 
+            background: white; 
+            border-radius: 50%; 
+            margin: -80px auto 15px auto;
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border: 4px solid rgba(255,255,255,0.8);
+        }
+        .logo-area img { width: 65px; height: auto; object-fit: contain; }
+
+        /* Emoji Rating Widget */
+        .emoji-widget { 
+            display: flex; flex-direction: row-reverse; 
+            justify-content: center; gap: 8px; margin: 15px 0; 
+        }
+        .emoji-widget input { display: none; }
+        .emoji-widget label { 
+            font-size: 38px; cursor: pointer; transition: 0.3s; 
+            filter: grayscale(100%) opacity(0.4); user-select: none;
+        }
+        .emoji-widget input:checked ~ label, 
+        .emoji-widget label:hover, 
+        .emoji-widget label:hover ~ label { 
+            filter: grayscale(0%); opacity: 1; transform: scale(1.15); 
+        }
+
+        /* Status Text */
+        #pesan-rating { 
+            font-weight: 600; font-size: 1.1rem; min-height: 25px; margin-bottom: 15px; 
+            color: #1e3c72; letter-spacing: 0.5px;
+        }
+        /* Override warna pesan rating di Dark Mode biar kebaca */
+        .dark-theme #pesan-rating.text-dark { color: #f8fafc !important; }
+
+        /* Form Dinamis */
+        .box-content { display: none; text-align: left; animation: slideUp 0.4s ease; }
+        .input-group-custom { 
+            background: var(--input-bg); 
+            padding: 15px; border-radius: 12px; border: 1px solid var(--input-border); 
+        }
+        
+        .form-select, .form-control { 
+            border-radius: 8px; font-size: 0.9rem; 
+            border: 1px solid #ced4da; 
+            background-color: #fff; /* Input tetap putih biar jelas, atau sesuaikan */
+            color: #333;
+        }
+        
+        /* Input Dark Mode Support */
+        .dark-theme .form-select, .dark-theme .form-control {
+            background-color: #1e293b; border-color: #475569; color: #f1f5f9;
+        }
+        .dark-theme .form-select:focus, .dark-theme .form-control:focus {
+            background-color: #1e293b; color: #f1f5f9;
+        }
+
+        .text-muted { color: var(--text-sub) !important; }
+        .text-dark { color: var(--text-color) !important; }
+
+        .btn-kirim { 
+            background: linear-gradient(to right, #1e3c72, #2a5298); 
+            color: white; border: none; padding: 12px; border-radius: 50px; 
+            font-weight: 600; width: 100%; margin-top: 20px; 
+            box-shadow: 0 4px 10px rgba(30, 60, 114, 0.3); transition: 0.3s;
+        }
+        .btn-kirim:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(30, 60, 114, 0.4); }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div class="btn-kembali-wrapper">
+        <a href="/" class="btn-kembali"><i class="fas fa-arrow-left"></i> <span id="txt-back">Menu Utama</span></a>
+    </div>
+
+    <div class="top-tools">
+        <button class="tool-btn" onclick="toggleDarkMode()">
+            <i class="fas fa-moon" id="icon-mode"></i>
+        </button>
+        <button class="tool-btn" onclick="toggleLang()">
+            <img src="https://flagcdn.com/w20/id.png" id="img-flag" width="20" style="vertical-align: middle;"> 
+            <span id="txt-lang">ID</span>
+        </button>
+    </div>
+
+    <form action="/submit" method="POST" class="card-survey" id="formSurvei" onsubmit="submitSurvey(event)">
+        <div class="logo-area">
+             <img src="logo.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2534/2534197.png'">
+        </div>
+
+        <h4 class="fw-bold text-dark mb-1" id="txt-title">Kepuasan Pelayanan</h4>
+        <p class="text-muted small" id="txt-subtitle">Bagaimana pengalaman Anda hari ini?</p>
+
+        <div class="emoji-widget">
+            <input type="radio" name="rating" value="5" id="r5" onclick="cek(5)"><label for="r5" title="Sangat Puas">😍</label>
+            <input type="radio" name="rating" value="4" id="r4" onclick="cek(4)"><label for="r4" title="Puas">😊</label>
+            <input type="radio" name="rating" value="3" id="r3" onclick="cek(3)"><label for="r3" title="Biasa">😐</label>
+            <input type="radio" name="rating" value="2" id="r2" onclick="cek(2)"><label for="r2" title="Kecewa">😞</label>
+            <input type="radio" name="rating" value="1" id="r1" onclick="cek(1)"><label for="r1" title="Marah">😡</label>
+        </div>
+
+        <div id="pesan-rating"></div>
+
+        <div id="dynamic-form" class="box-content">
+            <div class="input-group-custom">
+                <label class="small fw-bold mb-2 d-block" id="label-pertanyaan">Detail:</label>
+                
+                <select class="form-select mb-2" name="kategori" id="input-kategori" required>
+                    <option value="" disabled selected id="opt-default">- Pilih Alasan -</option>
+                </select>
+
+                <textarea class="form-control" name="pesan" rows="2" id="input-pesan" placeholder="Ceritakan detailnya (Opsional)..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-kirim" id="btn-kirim">KIRIM PENILAIAN <i class="fas fa-paper-plane ms-2"></i></button>
+        </div>
+    </form>
+
+    <script>
+        // === 1. DATA TRANSLATE ===
+        const langData = {
+            'ID': {
+                flag: 'https://flagcdn.com/w20/id.png',
+                back: 'Menu Utama',
+                title: 'Kepuasan Pelayanan',
+                subtitle: 'Bagaimana pengalaman Anda hari ini?',
+                optDefault: '- Pilih Alasan Utama -',
+                placeholder: 'Ceritakan detailnya (Opsional)...',
+                btn: 'KIRIM PENILAIAN',
+                lblPos: '<i class="fas fa-thumbs-up me-1"></i> Apa yang Anda sukai?',
+                lblNeg: '<i class="fas fa-exclamation-circle me-1"></i> Apa kekurangannya?',
+                status: ["Sangat Kecewa", "Kurang Puas", "Biasa Saja", "Puas", "Sangat Puas!"]
+            },
+            'EN': {
+                flag: 'https://flagcdn.com/w20/us.png',
+                back: 'Main Menu',
+                title: 'Service Satisfaction',
+                subtitle: 'How was your experience today?',
+                optDefault: '- Select Main Reason -',
+                placeholder: 'Tell us more (Optional)...',
+                btn: 'SUBMIT RATING',
+                lblPos: '<i class="fas fa-thumbs-up me-1"></i> What did you like?',
+                lblNeg: '<i class="fas fa-exclamation-circle me-1"></i> What went wrong?',
+                status: ["Very Disappointed", "Not Satisfied", "Neutral", "Satisfied", "Very Satisfied!"]
+            }
+        };
+
+        const alasanPositifID = ["Pelayanan Sangat Ramah", "Proses Cepat & Mudah", "Satpam Sangat Membantu", "Ruangan Nyaman/Dingin", "Penjelasan Petugas Jelas", "Fasilitas ATM/Toilet Bersih", "Lainnya"];
+        const alasanNegatifID = ["Antrian Terlalu Lama", "Petugas Kurang Ramah", "Sistem Offline/Error", "Ruangan Panas/Kotor", "Proses Berbelit-belit", "ATM Bermasalah", "Lainnya"];
+        
+        const alasanPositifEN = ["Service was Friendly", "Fast & Easy Process", "Security Very Helpful", "Comfortable/Cool Room", "Clear Explanation", "Clean ATM/Toilet Facilities", "Others"];
+        const alasanNegatifEN = ["Queue was too Long", "Staff Unfriendly", "System Offline/Error", "Room Hot/Dirty", "Complicated Process", "ATM Issues", "Others"];
+
+        // === 2. STATE VARIABLES ===
+        let currentLang = 'ID';
+        let currentRating = 0; // Menyimpan rating terakhir yg diklik
+
+        // === 2.5 HELPER: RESET DATA HARIAN SETIAP BULAN ===
+        function checkAndResetMonthlyData() {
+            const lastReset = localStorage.getItem('harian_last_reset');
+            const today = new Date();
+            const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+            
+            if (lastReset !== currentMonth) {
+                // Bulan baru, reset data harian
+                const oldData = JSON.parse(localStorage.getItem('db_harian') || '[]');
+                // Backup data lama jika ada
+                if (oldData.length > 0) {
+                    const backup = localStorage.getItem('harian_backup') || '[]';
+                    const allBackups = JSON.parse(backup);
+                    allBackups.push({ month: lastReset, data: oldData });
+                    localStorage.setItem('harian_backup', JSON.stringify(allBackups));
+                }
+                // Reset data harian
+                localStorage.removeItem('db_harian');
+                localStorage.setItem('harian_last_reset', currentMonth);
+                console.log('Data harian direset untuk bulan baru:', currentMonth);
+            }
+        }
+
+        // === 3. INISIALISASI (CEK LOCALSTORAGE) ===
+        window.addEventListener('load', () => {
+            checkAndResetMonthlyData(); // Check dan reset jika perlu
+            if(localStorage.getItem('theme') === 'dark') setDarkMode(true);
+            if(localStorage.getItem('lang') === 'EN') {
+                currentLang = 'EN';
+                updateLanguageUI();
+            }
+        });
+
+        // === 4. LOGIKA DARK MODE ===
+        function toggleDarkMode() {
+            const isDark = document.body.classList.contains('dark-theme');
+            setDarkMode(!isDark);
+        }
+
+        function setDarkMode(enable) {
+            const body = document.body;
+            const icon = document.getElementById('icon-mode');
+            if (enable) {
+                body.classList.add('dark-theme');
+                icon.classList.remove('fa-moon'); icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark-theme');
+                icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // === 5. LOGIKA TRANSLATE ===
+        function toggleLang() {
+            currentLang = (currentLang === 'ID') ? 'EN' : 'ID';
+            localStorage.setItem('lang', currentLang);
+            updateLanguageUI();
+            
+            // Refresh dropdown jika user sudah memilih rating
+            if (currentRating > 0) cek(currentRating);
+        }
+
+        function updateLanguageUI() {
+            const d = langData[currentLang];
+            document.getElementById('txt-lang').innerText = currentLang;
+            document.getElementById('img-flag').src = d.flag;
+            document.getElementById('txt-back').innerText = d.back;
+            document.getElementById('txt-title').innerText = d.title;
+            document.getElementById('txt-subtitle').innerText = d.subtitle;
+            document.getElementById('opt-default').innerText = d.optDefault;
+            document.getElementById('input-pesan').placeholder = d.placeholder;
+            // Update tombol kirim (hapus ikon dulu biar ga dobel)
+            document.getElementById('btn-kirim').innerHTML = `${d.btn} <i class="fas fa-paper-plane ms-2"></i>`;
+        }
+
+        // === 6. LOGIKA RATING (UPDATE) ===
+        function cek(n) {
+            currentRating = n; // Simpan state
+            const d = langData[currentLang];
+            
+            const labelPertanyaan = document.getElementById('label-pertanyaan');
+            const selectKategori = document.getElementById('input-kategori');
+            const formBox = document.getElementById('dynamic-form');
+            const pesanRating = document.getElementById('pesan-rating');
+
+            // 1. Tampilkan Teks Status (Ambil dari dictionary)
+            pesanRating.innerText = d.status[n - 1];
+            
+            // Ubah warna teks status
+            pesanRating.className = (n >= 4) ? "text-success fw-bold" : (n == 3 ? "text-warning fw-bold" : "text-danger fw-bold");
+
+            // 2. Munculkan Form
+            formBox.style.display = 'block';
+
+            // 3. Reset & Isi Dropdown
+            selectKategori.innerHTML = `<option value="" disabled selected>${d.optDefault}</option>`;
+
+            let opsiArray = [];
+
+            if (n >= 4) {
+                // POSITIF
+                labelPertanyaan.innerHTML = d.lblPos;
+                labelPertanyaan.className = "small fw-bold text-success mb-2 d-block";
+                opsiArray = (currentLang === 'ID') ? alasanPositifID : alasanPositifEN;
+            } else {
+                // NEGATIF
+                labelPertanyaan.innerHTML = d.lblNeg;
+                labelPertanyaan.className = "small fw-bold text-danger mb-2 d-block";
+                opsiArray = (currentLang === 'ID') ? alasanNegatifID : alasanNegatifEN;
+            }
+
+            // Loop isi dropdown
+            opsiArray.forEach(text => {
+                let opt = document.createElement("option");
+                opt.value = text; opt.text = text;
+                selectKategori.add(opt);
+            });
+        }
+
+        // === 7. SUBMIT FORM (SIMPAN KE LOCALSTORAGE & KIRIM KE SERVER) ===
+        function submitSurvey(event) {
+            event.preventDefault();
+            
+            const rating = document.querySelector('input[name="rating"]:checked');
+            const kategori = document.getElementById('input-kategori');
+            const pesan = document.getElementById('input-pesan');
+            
+            if (!rating || !kategori.value) {
+                alert('Mohon lengkapi form survey!');
+                return;
+            }
+            
+            // 1. Simpan ke localStorage agar muncul langsung di dashboard
+            const tgl = new Date().toLocaleString('id-ID');
+            const surveyData = {
+                Tanggal: tgl,
+                rating: parseInt(rating.value),
+                kategori: kategori.value,
+                pesan: pesan.value || '-',
+                jenis: 'harian'
+            };
+            
+            // Ambil data existing dari localStorage
+            let existingData = JSON.parse(localStorage.getItem('db_harian') || '[]');
+            existingData.push(surveyData);
+            localStorage.setItem('db_harian', JSON.stringify(existingData));
+            
+            // 2. Kirim ke server untuk disimpan di Excel
+            fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    rating: rating.value,
+                    kategori: kategori.value,
+                    pesan: pesan.value || '-',
+                    jenis: 'harian'
+                })
+            }).then(response => {
+                // Tampilkan notifikasi sukses
+                alert('Terima kasih atas masukan Anda!');
+                // Reset form
+                document.getElementById('formSurvei').reset();
+                document.getElementById('dynamic-form').style.display = 'none';
+                document.getElementById('pesan-rating').innerText = '';
+                currentRating = 0;
+            }).catch(err => {
+                console.error('Error:', err);
+                alert('Data tersimpan (offline mode)');
+            });
+        }
+    </script>
+</body>
+</html>
